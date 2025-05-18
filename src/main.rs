@@ -37,4 +37,31 @@ fn detect_directory() -> Result<PathBuf> {
 
     Ok(path.to_path_buf())
 }
+
+fn format_filename_with_link(path: &Path) -> Result<String> {
+    let canon_path = path.canonicalize()?;
+    let uri = Url::from_file_path(&canon_path)
+        .expect("Failed to create URI")
+        .to_string();
+
+    #[cfg(windows)]
+    let clean_path: PathBuf = {
+        let s = canon_path.to_string_lossy();
+        let trimmed = if s.starts_with(r#"\\?\"#) {
+            &s[4..]
+        } else {
+            &s
+        };
+        PathBuf::from(trimmed)
+    };
+    #[cfg(not(windows))]
+    let clean_path: &Path = &canon_path;
+
+    let link = format!(
+        "\x1b]8;;{}\x1b\\{}\x1b]8;;\x1b\\",
+        uri,
+        clean_path.display()
+    );
+
+    Ok(link)
 }
