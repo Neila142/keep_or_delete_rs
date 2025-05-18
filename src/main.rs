@@ -57,8 +57,9 @@ fn format_filename_with_link(path: &Path) -> Result<String> {
         .to_string();
 
     #[cfg(windows)]
-    let temp_buf = simplify_windows_filename_for_view(canon_path)?;
-    let clean_path: &Path = &PathBuf::as_path(&temp_buf);
+    let clean_path_buf = simplify_windows_filename_for_view(canon_path)?;
+    #[cfg(windows)]
+    let clean_path: &Path = &clean_path_buf;
     #[cfg(not(windows))]
     let clean_path: &Path = &canon_path;
 
@@ -71,6 +72,7 @@ fn format_filename_with_link(path: &Path) -> Result<String> {
     Ok(link)
 }
 
+#[cfg(windows)]
 fn simplify_windows_filename_for_view(path: PathBuf) -> Result<PathBuf> {
     let clean_path: PathBuf = {
         let s = path.to_string_lossy();
