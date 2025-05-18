@@ -1,5 +1,7 @@
 fn main() {
-    println!("Hello, world!");
+    cli_interface().expect("Error in the CLI interface");
+}
+
 fn detect_directory() -> Result<PathBuf> {
     let mut args: Vec<String> = args().collect();
     args.remove(0);
@@ -71,4 +73,7 @@ fn simplify_windows_filename_for_view(path: PathBuf) -> Result<PathBuf> {
     };
 
     Ok(clean_path)
+}
+
+fn cli_interface() -> Result<()> {
 }
