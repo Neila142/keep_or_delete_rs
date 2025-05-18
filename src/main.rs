@@ -8,6 +8,8 @@ use walkdir::WalkDir;
 
 fn main() {
     cli_interface().expect("Error in the CLI interface");
+
+    println!("Done, Thanks for using KeepOrDelete?");
 }
 
 fn detect_directory() -> Result<PathBuf> {
