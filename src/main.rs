@@ -1,7 +1,8 @@
 use std::env::{args, current_dir};
-use std::io::{Error, ErrorKind, Result};
+use std::io::{Error, ErrorKind, Result, stdin};
 use std::path::{Path, PathBuf};
 //Crates
+use trash;
 use url::Url;
 use walkdir::WalkDir;
 
@@ -83,4 +84,47 @@ fn simplify_windows_filename_for_view(path: PathBuf) -> Result<PathBuf> {
 }
 
 fn cli_interface() -> Result<()> {
+    let working_dir = detect_directory().expect("Failed to detect directory");
+
+    let mut files_iterator = WalkDir::new(working_dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+        .peekable();
+
+    if files_iterator.peek().is_none() {
+        println!("No files found in the directory");
+        return Ok(());
+    }
+    
+    for entry in files_iterator {
+        println!("Starting reading files");
+
+        cli_process_entry(&entry)?;
+    }
+
+    Ok(())
+}
+
+fn cli_process_entry(entry: &walkdir::DirEntry) -> Result<()> {
+    let link = format_filename_with_link(entry.path())?;
+
+    println!("File: \n{}\n", link);
+    println!("Action? [D]elete/[K]eep (default: keep)");
+
+    let mut input = String::new();
+    stdin().read_line(&mut input)?;
+
+    match input.trim().to_lowercase().as_str() {
+       "" | "k" => {
+            println!("Kept: {}", entry.path().display())
+        },
+        "d" => {
+            trash::delete(entry.path()).unwrap();
+            println!("Deleted: {}", entry.path().display());
+        }
+        _ => println!("Invalid input"),
+    }
+    
+    Ok(())
 }
